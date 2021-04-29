@@ -1,0 +1,28 @@
+{
+  "name": "aiondiscordbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reikop/AionDiscordBot.git"
+  },
+  "keywords": [
+    "AION"
+  ],
+  "author": "reikop",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reikop/AionDiscordBot/issues"
+  },
+  "homepage": "https://github.com/reikop/AionDiscordBot#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "discord.js": "^12.5.3",
+    "lodash": "^4.17.21",
+    "numeral": "^2.0.6"
+  }
+}
