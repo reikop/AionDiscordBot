@@ -36,7 +36,6 @@ const abyssItem = {
 }
 const api = axios.create({
     baseURL : 'https://reikop.com:8081',
-    timeout: 3000
 });
 
 client.on('ready', () => {
@@ -45,7 +44,7 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
     if(msg.content.startsWith("!서버")){
-        const guildId = msg.guild.id;
+        const guildId = msg.channel.id;
         const content = msg.content.split(" ");
         const servername = content[1];
         if(servername){
@@ -81,24 +80,45 @@ client.on('message', async msg => {
     }
     //console.info(msg.guild.name, msg.author.username, msg.content);
     if(msg.content.startsWith("!누구 ") || msg.content.startsWith("!검색 ")){
-        const server = await findServer(msg.guild.id);
-        if(server == null){
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setTitle(`설정된 서버가 없습니다.`)
-                .setColor("RED")
-                .addField("서버 확인 방법", "!서버")
-                .addField("서버 설정 방법", "!서버 서버이름")
-                .addField("서버 목록", servers.map(s => s.name)));
-            return;
-        }
         const content = msg.content.split(" ");
         const nickname = content[1];
+        const servername = content[2];
+        let server;
+        if(servername == null) {
+            server = await findServer(msg.channel.id);
+            if(server == null){
+                await msg.channel.send(new Discord.MessageEmbed()
+                    .setTitle(`설정된 서버가 없습니다.`)
+                    .setColor("RED")
+                    .addField("서버 확인 방법", "!서버")
+                    .addField("서버 설정 방법", "!서버 서버이름")
+                    .addField("서버 목록", servers.map(s => s.name)));
+                return;
+            }
+        }else{
+            server = _.find(servers, {name:servername});
+            if(server == null){
+                await msg.channel.send(new Discord.MessageEmbed()
+                    .setColor("YELLOW")
+                    .setTitle("정확한 이름을 작성해주세요")
+                    .addField("서버 목록", servers.map(s => s.name))
+                )
+                return;
+            }
+        }
+
         let char = null;
         try{
             char = await findChar(server.type, nickname);
             const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
             if(c != null){
-                await msg.reply(`${c.charname}님을 찾았습니다.`);
+                const url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.userid}/home`
+                await msg.channel.send(new Discord.MessageEmbed()
+                    .setURL(url)
+                    .setTitle(`\`${server.name}\`서버 에서 \`${c.charname}\`님을 찾았습니다.`));
+
+                // await msg.channel.send(`\`${server.name}\`서버 에서 \`${c.charname}\`님을 찾았습니다.`);
+
                 const stat = await findStat(c);
                 // await msg.reply(`${stat.character_abyss.rankName} '${char.charname}'님 총 킬수는 ${stat.character_abyss.totalKillCount}입니다.`);
                 await msg.channel.send(getStatus(c, stat));
@@ -115,12 +135,13 @@ client.on('message', async msg => {
                     .setColor("RED"))
             }
         }catch (e) {
+            const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
+            const serverid = getOriginServerId(c.server);
             const url = `https://aion.plaync.com/characters/server/${serverid}/id/${char.userid}/home`
             await msg.channel.send(new Discord.MessageEmbed()
                 .setColor("RED")
                 .setURL(url)
                 .setTitle("아이온 서버가 응답하지 않습니다."));
-            console.info(e);
         }
 
     }
@@ -130,12 +151,12 @@ client.on('message', async msg => {
 function getStatus(char, stat){
     const serverid = getOriginServerId(char.server);
     return new Discord.MessageEmbed()
-        .setAuthor('케릭터 검색기',
+        .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
             null,
-            `http://reikop.com:8080`)
-        .setTitle(`Lv.${char.level} ${stat.character_abyss.rankName} ${char.charname} 🚩${char.guildName}`)
+            `https://aion.plaync.com/characters/server/${serverid}/id/${char.userid}/home`)
+        .setTitle(`Lv.${char.level} ${char.charname} ${char.guildName ? `<${char.guildName}>` : ''}`)
         .setColor("RANDOM")
-        .setThumbnail(`https://profileimg.plaync.com/game_profile_images/aion/images?gameServerKey=22&charKey=${char.userid}`)
+        .setThumbnail(`https://profileimg.plaync.com/game_profile_images/aion/images?gameServerKey=${serverid}&charKey=${char.userid}`)
         .addField('주요 능력치', getStatList(char, stat).join("\n"), true)
         .addField("장착 스티그마", getStigmaList(char, stat).join("\n") || '장착된 스티그마가 없습니다.', true)
         .addField("장착 아이템", getItemList(char, stat).join("\n") || '장착된 아이템이 없습니다.')
@@ -222,7 +243,7 @@ async function findChar(server, name){
             return data;
         }
     }catch (e) {
-        console.error('error', e)
+        // console.error('error', e)
         return {};
     }
 }
