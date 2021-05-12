@@ -112,18 +112,8 @@ client.on('message', async msg => {
             char = await findChar(server.type, nickname);
             const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
             if(c != null){
-                const url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.userid}/home`
-                await msg.channel.send(new Discord.MessageEmbed()
-                    .setURL(url)
-                    .setTitle(`\`${server.name}\`서버 에서 \`${c.charname}\`님을 찾았습니다.`));
-
-                // await msg.channel.send(`\`${server.name}\`서버 에서 \`${c.charname}\`님을 찾았습니다.`);
-
                 const stat = await findStat(c);
-                // await msg.reply(`${stat.character_abyss.rankName} '${char.charname}'님 총 킬수는 ${stat.character_abyss.totalKillCount}입니다.`);
                 await msg.channel.send(getStatus(c, stat));
-                // await msg.reply(getItems(char, stat));
-                // await msg.reply(getStigmas(char, stat));
             }else if(char != null){
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setTitle(`${nickname}님을 찾을수 없습니다.`)
@@ -135,13 +125,18 @@ client.on('message', async msg => {
                     .setColor("RED"))
             }
         }catch (e) {
-            const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
-            const serverid = getOriginServerId(c.server);
-            const url = `https://aion.plaync.com/characters/server/${serverid}/id/${char.userid}/home`
+            let url;
+            if(!char){
+                url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
+            }else{
+                const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
+                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.userid}/home`
+            }
             await msg.channel.send(new Discord.MessageEmbed()
                 .setColor("RED")
                 .setURL(url)
-                .setTitle("아이온 서버가 응답하지 않습니다."));
+                .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다."));
+
         }
 
     }
