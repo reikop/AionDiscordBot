@@ -165,7 +165,7 @@ function getStatList(char, stat){
 
     result.push({name: '생명력', value: numeral(totalStat.hp).format('0,0'), inline: true})
     result.push({name: '마법저항', value: numeral(totalStat.magicResist).format('0,0'), inline: true, warn: totalStat.magicResist > 1760})
-    if(totalStat.block > 1900){
+    if(totalStat.block > 2300){
         result.push({name: '방패방어', value: numeral(totalStat.block).format('0,0'), inline: true, warn: totalStat.block > 2600})
     }
     if(totalStat.dodge > 1900){
@@ -174,10 +174,11 @@ function getStatList(char, stat){
     if(classType(char.className) === 'P'){
         result.push({name: '공격력', value: numeral(totalStat.physicalRight).format('0,0'), inline: true })
         result.push({name: '명중', value: numeral(totalStat.accuracyRight).format('0,0'), inline: true })
-        result.push({name: '물리치명타', value: numeral(totalStat.physicalRight).format('0,0'), inline: true })
+        result.push({name: '물리 치명타', value: numeral(totalStat.criticalRight).format('0,0'), inline: true })
     }else if(classType(char.className) === 'M'){
         result.push({name: '마법증폭', value: numeral(totalStat.magicalBoost).format('0,0'), inline: true, warn: totalStat.magicalBoost > 2500 })
         result.push({name: '마법 적중', value: numeral(totalStat.magicalAccuracy).format('0,0'), inline: true, warn: totalStat.magicalAccuracy > 1700 })
+        result.push({name: '마법 치명타', value: numeral(totalStat.magicalCriticalRight).format('0,0'), inline: true, warn: totalStat.magicalCriticalRight > 100 })
     }
 
     result.push({name: 'PVP공격력', value: att.toFixed(1) + "%", inline: true})
@@ -186,7 +187,7 @@ function getStatList(char, stat){
     result.push({name: '물치저항', value: numeral(totalStat.phyCriticalReduceRate).format('0,0'), inline: true})
     result.push({name: '물치방어', value: numeral(totalStat.phyCriticalDamageReduce).format('0,0'), inline: true})
 
-    result.push({name: '킬수', value: numeral(stat.character_abyss.totalKillCount).format('0,0'), inline: true, warn: stat.character_abyss.totalKillCount > 20000})
+    result.push({name: '전체킬수', value: numeral(stat.character_abyss.totalKillCount).format('0,0'), inline: true, warn: stat.character_abyss.totalKillCount > 20000})
     result.push({name: '어비스 포인트', value: numeral(stat.character_abyss.abyssPoint).format('0,0'), inline: true})
     return result.map(s => `${s.name} :  ${s.value}`);
 }
