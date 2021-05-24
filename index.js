@@ -35,7 +35,7 @@ const abyssItem = {
     },
 }
 const api = axios.create({
-    baseURL : 'https://reikop.com:8081',
+    // baseURL : 'https://api-aion.plaync.com',
 });
 
 client.on('ready', () => {
@@ -52,7 +52,7 @@ client.on('message', async msg => {
             if(server){
                 const params = new URLSearchParams();
                 params.append('server', server.type);
-                await api.patch("/api/server/"+guildId, params);
+                await api.patch("https://reikop.com:8081/api/server/"+guildId, params);
 
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setColor("BLUE")
@@ -109,16 +109,17 @@ client.on('message', async msg => {
 
         let char = null;
         try{
-            char = await findChar(server.type, nickname);
-            const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
+            char = await findChar(server.id, nickname);
+            const c = _.find(char, c => c.charName.replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
             if(c != null){
+                c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
                 const stat = await findStat(c);
                 await msg.channel.send(getStatus(c, stat));
             }else if(char != null){
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setTitle(`${nickname}님을 찾을수 없습니다.`)
                     .setColor("RED")
-                    .addField('검색된 아이디', char.map(c => c.charname)));
+                    .addField('검색된 아이디', char.map(c => c.charName)));
             }else{
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setTitle(`${nickname}님을 찾을수 없습니다.`)
@@ -129,8 +130,8 @@ client.on('message', async msg => {
             if(!char){
                 url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
             }else{
-                const c = _.find(char, c => c.charname.toUpperCase() === nickname.toUpperCase());
-                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.userid}/home`
+                const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
+                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
             }
             await msg.channel.send(new Discord.MessageEmbed()
                 .setColor("RED")
@@ -144,19 +145,19 @@ client.on('message', async msg => {
 
 
 function getStatus(char, stat){
-    const serverid = getOriginServerId(char.server);
+    const serverid = char.serverId;
     return new Discord.MessageEmbed()
         .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
             null,
-            `https://aion.plaync.com/characters/server/${serverid}/id/${char.userid}/home`)
-        .setTitle(`Lv.${char.level} ${char.charname} ${char.guildName ? `<${char.guildName}>` : ''}`)
+            `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
+        .setTitle(`Lv.${char.level} ${char.charName} ${char.legionName ? `<${char.legionName}>` : ''}`)
         .setColor("RANDOM")
-        .setThumbnail(`https://profileimg.plaync.com/game_profile_images/aion/images?gameServerKey=${serverid}&charKey=${char.userid}`)
+        .setThumbnail(char.profileImg)
         .addField('주요 능력치', getStatList(char, stat).join("\n"), true)
         .addField("장착 스티그마", getStigmaList(char, stat).join("\n") || '장착된 스티그마가 없습니다.', true)
         .addField("장착 아이템", getItemList(char, stat).join("\n") || '장착된 아이템이 없습니다.')
         .setTimestamp()
-        .setURL(`https://aion.plaync.com/characters/server/${serverid}/id/${char.userid}/home`)
+        .setURL(`https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
 }
 function getStatList(char, stat){
     const totalStat = stat.character_stats.totalStat;
@@ -222,25 +223,29 @@ function classType(className){
     return 'P';
 }
 async function findServer(guildId){
-    const response = await api.get(`/api/server/${guildId}`);
-    return _.find(servers, {'type': response.data.servers});
+    const response = await api.get(`https://reikop.com:8081/api/server/${guildId}`);
+    if(response && response.data){
+        return _.find(servers, {'type': response.data.servers});
+    }else{
+        return null;
+    }
+
 }
-async function findStat({server, userid}){
-    const stats = await api.post(`/api/character/${server}/${userid}`);
-    return stats.data;
+async function findStat({serverId, charId}){
+    const data = {"keyList":["character_stats","character_equipments","character_abyss","character_stigma"]};
+    const response = await api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data);
+    // const stats = await api.post(`/api/character/${server}/${userid}`);
+    return response.data;
 }
 async function findChar(server, name){
-    const params = new URLSearchParams();
-    params.append('keyword', name);
-    params.append('server', server);
     try{
-        const {data} = await api.post(`/api/suggest`, params)
-        if(data != null && data.length > 0){
-            return data;
+        const {data} = await api.get(`https://api-aion.plaync.com/search/v1/characters?classId=&pageNo=1&pageSize=50&query=${encodeURIComponent(name)}&raceId=&serverId=${server}`);
+        if(data != null && data.documents.length > 0){
+            return data.documents;
         }
     }catch (e) {
-        // console.error('error', e)
-        return {};
+        console.error('error', e.message)
+        return [];
     }
 }
 
