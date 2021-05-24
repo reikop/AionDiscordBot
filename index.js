@@ -3,8 +3,8 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const _ = require("lodash");
 const numeral = require('numeral');
-const DISCORD_KEY = require('fs').readFileSync('../cert/DISCORD_KEY.txt', 'utf8');
-
+const args = require('args-parser')(process.argv);
+const DISCORD_KEY = args.key;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const servers = [
     // {id: 1, name: "가디언", type: "GUARDIAN"},
