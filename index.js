@@ -5,17 +5,19 @@ const _ = require("lodash");
 const numeral = require('numeral');
 const args = require('args-parser')(process.argv);
 const DISCORD_KEY = args.key;
+const targetServer = `https://reikop.com:8081`;
+// const targetServer = `http://localhost:3000`;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const servers = [
     // {id: 1, name: "가디언", type: "GUARDIAN"},
     // {id: 2, name: "아칸", type: "ARKAN"},
-    {id: 21, name: "이스라펠", type: 1},
-    {id: 22, name: "네자칸", type: 2},
-    {id: 23, name: "지켈", type: 3},
-    {id: 24, name: "바이젤", type: 4},
-    {id: 25, name: "트리니엘", type: 5},
-    {id: 26, name: "카이시넬", type: 6},
-    {id: 27, name: "루미엘", type: 7},
+    {id: 21, name: "이스라펠", type: "ISRAFEL"},
+    {id: 22, name: "네자칸", type: "NEZAKAN"},
+    {id: 23, name: "지켈", type: "ZICKEL"},
+    {id: 24, name: "바이젤", type: "BYZEL"},
+    {id: 25, name: "트리니엘", type: "TRINIEL"},
+    {id: 26, name: "카이시넬", type: "KAISINEL"},
+    {id: 27, name: "루미엘", type: "LUMIEL"},
 ]
 const abyssItem = {
     'TEN': { //십부
@@ -52,8 +54,7 @@ client.on('message', async msg => {
             if(server){
                 const params = new URLSearchParams();
                 params.append('server', server.type);
-                await api.patch("https://reikop.com:8081/api/server/"+guildId, params);
-
+                await api.patch(`${targetServer}/api/server/${guildId}`, params);
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setColor("BLUE")
                     .setTitle(servername+"서버가 지정되었습니다.")
@@ -119,7 +120,7 @@ client.on('message', async msg => {
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setTitle(`${nickname}님을 찾을수 없습니다.`)
                     .setColor("RED")
-                    .addField('검색된 아이디', char.map(c => c.charName)));
+                    .addField('검색된 아이디', char.map(c => c.charName.replace(/(<([^>]+)>)/ig, ""))));
             }else{
                 await msg.channel.send(new Discord.MessageEmbed()
                     .setTitle(`${nickname}님을 찾을수 없습니다.`)
@@ -223,7 +224,7 @@ function classType(className){
     return 'P';
 }
 async function findServer(guildId){
-    const response = await api.get(`https://reikop.com:8081/api/server/${guildId}`);
+    const response = await api.get(`${targetServer}/api/server/${guildId}`);
     if(response && response.data){
         return _.find(servers, {'type': response.data.servers});
     }else{
@@ -301,3 +302,32 @@ function getOriginServerId(name){
     return _.find(servers, n => n.type === name).id;
 }
 client.login(DISCORD_KEY);
+
+
+function clearUnusedServer(){
+    client.on("ready", async r => {
+        // let channel = client.channels.cache.get("860904763906457641");
+        //
+        const response = await api.get(`http://localhost:3000/api/server`)
+        const servers = [];
+        const leaveServers = [];
+        console.info(client.channels.cache.size)
+        client.channels.cache.forEach(channel => {
+            const exists = _.find(response.data, {guild_id: channel.id});
+            if(exists){
+                if(!servers.includes(channel.guild.id)){
+                    servers.push(channel.guild.id)
+                }
+            }else{
+                if(!leaveServers.includes(channel.guild.id)){
+                    leaveServers.push(channel.guild.id)
+                }
+            }
+        });
+        const target = _.difference(leaveServers, servers);
+        target.forEach(id => {
+            console.info(id, 'leave')
+            client.guilds.cache.get(id).leave().then(e => {});
+        })
+    })
+}
