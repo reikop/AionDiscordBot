@@ -18,6 +18,7 @@ const servers = [
     {id: 25, name: "트리니엘", type: "TRINIEL"},
     {id: 26, name: "카이시넬", type: "KAISINEL"},
     {id: 27, name: "루미엘", type: "LUMIEL"},
+    {id: 28, name: "유스티엘", type: "JUSTIEL"},
 ]
 const abyssItem = {
     'TEN': { //십부
