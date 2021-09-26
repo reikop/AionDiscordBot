@@ -59,7 +59,6 @@ export default class Server extends MessageWorker{
     async findServer(guildId){
         const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`);
         if(response && response.data){
-            console.info(response.data.servers, _.find(serverList, {'type': response.data.servers}));
             return _.find(serverList, {'type': response.data.servers});
         }else{
             return null;

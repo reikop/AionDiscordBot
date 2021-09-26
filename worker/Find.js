@@ -4,6 +4,7 @@ import numeral from "numeral";
 import _ from "lodash";
 
 import serverList from "../data/serverlist.js";
+import abyssItems from "../data/abyssItems.js";
 export default class Find extends MessageWorker{
 
     constructor() {
@@ -28,6 +29,7 @@ async receiveMessage(msg) {
         }
     } else {
         server = _.find(serverList, {name: servername});
+        console.info(server)
         if (server == null) {
             await msg.channel.send(new Discord.MessageEmbed()
                 .setColor("YELLOW")
@@ -57,6 +59,7 @@ async receiveMessage(msg) {
                 .setColor("RED"))
         }
     } catch (e) {
+        console.error(e.message)
         let url;
         if (!char) {
             url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
@@ -157,11 +160,10 @@ async receiveMessage(msg) {
         }else{
             return null;
         }
-
     }
     async findStat({serverId, charId}){
         const data = {"keyList":["character_stats","character_equipments","character_abyss","character_stigma"]};
-        const response = await api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data);
+        const response = await this.api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data);
         // const stats = await api.post(`/api/character/${server}/${userid}`);
         return response.data;
     }
@@ -189,7 +191,7 @@ async receiveMessage(msg) {
                     case '백' :  level = 'HUN'; break;
                     case '천' :  level = 'THO'; break;
                 }
-                const item = abyssItem[level];
+                const item = abyssItems[level];
                 const category = [equip.category1.alias, equip.category2.alias, equip.category3.alias];
                 if(category[0] === 'ACCESSORY'){
                     att += item[category[0]][category[1]];
@@ -220,6 +222,10 @@ async receiveMessage(msg) {
                 }
             }else if(equip.name === '라크하네의 머리장식'){
                 def += 2;
+            }else if(equip.name.startsWith('뒤틀린 황천의')){
+                def += 2;
+            }else if(equip.name.startsWith('가디언 정찰대의')){
+                def += 1.6;
             }
         }
         return {def, att}
