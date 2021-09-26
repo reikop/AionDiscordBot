@@ -18,19 +18,19 @@ export default class Server extends MessageWorker {
 
     async receiveMessage(msg) {
         if(msg.author.id === '366297167247310860'){
-
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setColor("GOLD")
-                // .setTitle("개발자님 안녕하세요.")
-                .setDescription("개발자 전용 명령어 입니다."));
-
+            await msg.channel.send({embeds: [
+                    new Discord.MessageEmbed()
+                        .setColor("GOLD")
+                        .setDescription("미사용 계정을 정리 합니다.")
+                ]});
             this.clearUnusedServer().then()
 
         }else{
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setColor("GOLD")
-                // .setTitle("개발자님 안녕하세요.")
-                .setDescription("개발자 전용 명령어 입니다."));
+            await msg.channel.send({embeds: [
+                    new Discord.MessageEmbed()
+                        .setColor("GOLD")
+                        .setDescription("개발자 전용 명령어 입니다.")
+                ]});
         }
     }
     async clearUnusedServer() {
@@ -51,9 +51,8 @@ export default class Server extends MessageWorker {
         });
         const target = _.difference(leaveServers, servers);
         target.forEach(id => {
-            console.info(id, 'leave')
-            // this.client.guilds.cache.get(id).leave().then(e => {
-            // });
+            this.client.guilds.cache.get(id).leave().then(e => {
+            });
         })
     };
 

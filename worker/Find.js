@@ -19,23 +19,25 @@ async receiveMessage(msg) {
     if (servername == null) {
         server = await this.findServer(msg.channel.id);
         if (server == null) {
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setTitle(`설정된 서버가 없습니다.`)
-                .setColor("RED")
-                .addField("서버 확인 방법", "!서버")
-                .addField("서버 설정 방법", "!서버 서버이름")
-                .addField("서버 목록", serverList.map(s => s.name)));
+            await msg.channel.send({embeds: [
+                    new Discord.MessageEmbed()
+                        .setTitle(`설정된 서버가 없습니다.`)
+                        .setColor("RED")
+                        .addField("서버 확인 방법", "!서버")
+                        .addField("서버 설정 방법", "!서버 서버이름")
+                        .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                ]});
             return;
         }
     } else {
         server = _.find(serverList, {name: servername});
-        console.info(server)
         if (server == null) {
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setColor("YELLOW")
-                .setTitle("정확한 이름을 작성해주세요")
-                .addField("서버 목록", serverList.map(s => s.name))
-            )
+            await msg.channel.send({embeds: [
+                    new Discord.MessageEmbed()
+                        .setColor("YELLOW")
+                        .setTitle("정확한 이름을 작성해주세요")
+                        .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                ]})
             return;
         }
     }
@@ -47,16 +49,22 @@ async receiveMessage(msg) {
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
-            await msg.channel.send(this.getStatus(c, stat));
+            await msg.channel.send({embeds: [this.getStatus(c, stat)]});
         } else if (char != null) {
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setTitle(`${nickname}님을 찾을수 없습니다.`)
-                .setColor("RED")
-                .addField('검색된 아이디', char.map(c => c.charName)));
+            await msg.channel.send({embeds: [
+                    new Discord.MessageEmbed()
+                        .setTitle(`${nickname}님을 찾을수 없습니다.`)
+                        .setColor("RED")
+                        .addField('검색된 아이디', char.map(c => c.charName).join("\n"))
+                ]});
         } else {
-            await msg.channel.send(new Discord.MessageEmbed()
-                .setTitle(`${nickname}님을 찾을수 없습니다.`)
-                .setColor("RED"))
+            await msg.channel.send({
+                embeds: [
+                    new Discord.MessageEmbed()
+                        .setTitle(`${nickname}님을 찾을수 없습니다.`)
+                        .setColor("RED")
+                ]
+            })
         }
     } catch (e) {
         console.error(e.message)
@@ -67,10 +75,12 @@ async receiveMessage(msg) {
             const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
             url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
         }
-        await msg.channel.send(new Discord.MessageEmbed()
-            .setColor("RED")
-            .setURL(url)
-            .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다."));
+        await msg.channel.send({embeds: [
+                new Discord.MessageEmbed()
+                    .setColor("RED")
+                    .setURL(url)
+                    .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
+            ]});
     }
 
 }
@@ -127,7 +137,7 @@ async receiveMessage(msg) {
         return stat.character_stigma.map(s => s.name);
     }
     getItemList(char, stat){
-        const sort = [0,17,1,18,3,11,12,4,5,2,10,6,7,8,9,16];
+        const sort = [0,17,1,18,3,11,12,4,5,2,10,6,7,8,9,16,15];
         const group = _.groupBy(stat.character_equipments, 'equipSlotType');
         return sort.map(idx => {
             if(group[idx]){
@@ -174,7 +184,7 @@ async receiveMessage(msg) {
                 return data.documents;
             }
         }catch (e) {
-            console.error('error', e.message)
+            console.error('error', e)
             return [];
         }
     }

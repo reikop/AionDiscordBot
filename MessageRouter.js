@@ -1,3 +1,4 @@
+import Discord from "discord.js";
 
 export default class MessageRouter{
 
@@ -14,8 +15,13 @@ export default class MessageRouter{
     }
 
     receiveMessage(msg) {
+        if(msg.author.id === '366297167247310860'){
+            
+        }
         Object.keys(this.router).forEach(key => {
             if(msg.content.startsWith(key)){
+                this.router[key].receiveMessage(msg);
+            }else if(key === "*"){
                 this.router[key].receiveMessage(msg);
             }
         })
