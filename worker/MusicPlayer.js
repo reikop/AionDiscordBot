@@ -124,7 +124,7 @@ export default class MusicPlayer extends MessageWorker {
                     new Discord.MessageEmbed()
                         // .setAuthor(`made By 동매 (aka. reikop)`,
                         //     null,
-                        //     `https://reikop.com`)
+                        //     `https:/제/reikop.com`)
                         .setTitle(`노래하는 코노슝 v0.1 명령어`)
                         .setColor("DARK_BLUE")
                         .setDescription("노래 제목 혹은 유튜브 URL을 입력하시면 자동으로 노래를 검색합니다.")
