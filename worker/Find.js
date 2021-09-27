@@ -75,7 +75,7 @@ async receiveMessage(msg) {
             if(c){
                 url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
             }else{
-                url = `https://aion.plaync.com/search/home?query=${nickname}&site=aion`;
+                url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
             }
         }
         await msg.channel.send({
