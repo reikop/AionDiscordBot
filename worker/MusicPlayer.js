@@ -154,61 +154,60 @@ export default class MusicPlayer extends MessageWorker {
     }
 
     async receiveMessage(message) {
-        if(message.author.id === '366297167247310860'){
-            if(message.content === "코노슝 설치"){
-                // const channel = await message.guild.channels.create("노래하는-코노슝", {type: 'GUILD_TEXT'});
-                await this.addMusicServer(message.channel);
-                await message.delete();
-                await message.channel.send({embeds: [
-                        new Discord.MessageEmbed()
-                            .setColor("GOLD")
-                            .setTitle("코노슝 설치가 완료 되었습니다.")
-                            .setDescription("개발자 전용 명령어 입니다.")
-                    ]});
+        try {
+            if (message.author.id === '366297167247310860') {
+                if (message.content === "코노슝 설치") {
+                    // const channel = await message.guild.channels.create("노래하는-코노슝", {type: 'GUILD_TEXT'});
+                    await this.addMusicServer(message.channel);
+                    await message.delete();
+                    await message.channel.send({
+                        embeds: [
+                            new Discord.MessageEmbed()
+                                .setColor("GOLD")
+                                .setTitle("코노슝 설치가 완료 되었습니다.")
+                                .setDescription("개발자 전용 명령어 입니다.")
+                        ]
+                    });
+                    return;
+                }
+            }
+            const server = _.find(this.servers, {guildId: message.guild.id, id: message.channel.id});
+            if (!server) {
                 return;
             }
-        }
-        const server = _.find(this.servers, {guildId: message.guild.id, id: message.channel.id});
-        if(!server){
-            return;
-        }
-        const args = message.content.slice("!").trim().split(/ +/g);
-        const command = args.shift();
-        let guildQueue = this.player.getQueue(message.guild.id);
-        if (command === '다음') {
-            if(guildQueue){
-                guildQueue.skip();
-                message.delete();
-            }
-        }else if (command === '나가') {
-            if(guildQueue){
-                guildQueue.stop();
-            }
-            await this.clearChannel(message.channel);
-            await this.updateSong(message.channel);
-        } else if(!message.author.bot){
-            let queue = this.player.createQueue(message.guild.id);
-            queue.join(message.member.voice.channel).then(async c => {
-                queue.play(message.content).then(song => {
-                    this.updateSong(message.channel, song)
-                }).catch(_ => {
-                    if (!guildQueue){
-                        queue.stop();
-                    }
+            const args = message.content.slice("!").trim().split(/ +/g);
+            const command = args.shift();
+            let guildQueue = this.player.getQueue(message.guild.id);
+            if (command === '다음') {
+                if (guildQueue) {
+                    guildQueue.skip();
+                    message.delete();
+                }
+            } else if (command === '나가') {
+                if (guildQueue) {
+                    guildQueue.stop();
+                }
+                await this.clearChannel(message.channel);
+                await this.updateSong(message.channel);
+            } else if (!message.author.bot) {
+                let queue = this.player.createQueue(message.guild.id);
+                queue.join(message.member.voice.channel).then(async c => {
+                    queue.play(message.content).then(song => {
+                        this.updateSong(message.channel, song)
+                    }).catch(_ => {
+                        if (!guildQueue) {
+                            queue.stop();
+                        }
+                        this.updateError(message, "오류가 발생했습니다.");
+                    });
+                }).catch(e => {
+                    console.error(e);
                     this.updateError(message, "오류가 발생했습니다.");
                 });
-            }).catch(e => {
-                console.error(e);
-                this.updateError(message, "오류가 발생했습니다.");
-            });
-            message.delete();
+                message.delete();
+            }
+        } catch (e) {
+            console.error(e)
         }
-
     }
-
-
-
-
-
-
 }
