@@ -67,15 +67,19 @@ async receiveMessage(msg) {
             })
         }
     } catch (e) {
-        console.error(e.message)
         let url;
         if (!char) {
             url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
         } else {
             const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
-            url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
+            if(c){
+                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
+            }else{
+                url = `https://aion.plaync.com/search/home?query=${nickname}&site=aion`;
+            }
         }
-        await msg.channel.send({embeds: [
+        await msg.channel.send({
+            embeds: [
                 new Discord.MessageEmbed()
                     .setColor("RED")
                     .setURL(url)
