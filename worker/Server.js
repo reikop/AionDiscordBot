@@ -10,7 +10,6 @@ export default class Server extends MessageWorker{
     }
 
     async receiveMessage(msg) {
-        console.info(serverList)
         const guildId = msg.channel.id;
         const content = msg.content.split(" ");
         const servername = content[1];
