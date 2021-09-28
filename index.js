@@ -19,7 +19,7 @@ const router = new MessageRouter();
 router.registWorker("!서버", new Server());
 router.registWorker("!정리", new Trim(client));
 router.registWorker(["!누구", "!검색"], new Find());
-router.registWorker("*", new MusicPlayer(client));
+// router.registWorker("*", new MusicPlayer(client));
 
 client.on('message', async msg => router.receiveMessage(msg));
 client.login(DISCORD_KEY);
