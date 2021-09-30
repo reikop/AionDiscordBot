@@ -47,7 +47,7 @@ async receiveMessage(msg) {
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
-            await msg.channel.send({embeds: [this.getStatus(c, stat)]});
+            this.send(msg.channel, this.getStatus(c, stat))
         } else if (char != null) {
             this.send(msg.channel,
                     new Discord.MessageEmbed()
