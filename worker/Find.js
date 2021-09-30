@@ -19,25 +19,23 @@ async receiveMessage(msg) {
     if (servername == null) {
         server = await this.findServer(msg.channel.id);
         if (server == null) {
-            await msg.channel.send({embeds: [
+            this.send(msg.channel,
                     new Discord.MessageEmbed()
                         .setTitle(`설정된 서버가 없습니다.`)
                         .setColor("RED")
                         .addField("서버 확인 방법", "!서버")
                         .addField("서버 설정 방법", "!서버 서버이름")
                         .addField("서버 목록", serverList.map(s => s.name).join("\n"))
-                ]});
+                );
             return;
         }
     } else {
         server = _.find(serverList, {name: servername});
         if (server == null) {
-            await msg.channel.send({embeds: [
-                    new Discord.MessageEmbed()
-                        .setColor("YELLOW")
-                        .setTitle("정확한 이름을 작성해주세요")
-                        .addField("서버 목록", serverList.map(s => s.name).join("\n"))
-                ]})
+            this.send(msg.channel, new Discord.MessageEmbed()
+                .setColor("YELLOW")
+                .setTitle("정확한 이름을 작성해주세요")
+                .addField("서버 목록", serverList.map(s => s.name).join("\n")))
             return;
         }
     }
@@ -51,20 +49,18 @@ async receiveMessage(msg) {
             const stat = await this.findStat(c);
             await msg.channel.send({embeds: [this.getStatus(c, stat)]});
         } else if (char != null) {
-            await msg.channel.send({embeds: [
+            this.send(msg.channel,
                     new Discord.MessageEmbed()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor("RED")
                         .addField('검색된 아이디', char.map(c => c.charName).join("\n"))
-                ]});
+                );
         } else {
-            await msg.channel.send({
-                embeds: [
+            this.send(msg.channel,
                     new Discord.MessageEmbed()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor("RED")
-                ]
-            })
+            )
         }
     } catch (e) {
         let url;
@@ -78,13 +74,12 @@ async receiveMessage(msg) {
                 url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
             }
         }
-        await msg.channel.send({
-            embeds: [
+        this.send(msg.channel,
                 new Discord.MessageEmbed()
                     .setColor("RED")
                     .setURL(url)
                     .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
-            ]});
+            );
     }
 
 }
@@ -204,6 +199,7 @@ async receiveMessage(msg) {
                     case '십' :  level = 'TEN'; break;
                     case '백' :  level = 'HUN'; break;
                     case '천' :  level = 'THO'; break;
+                    case '만' :  level = 'THU'; break;
                 }
                 const item = abyssItems[level];
                 const category = [equip.category1.alias, equip.category2.alias, equip.category3.alias];
@@ -245,4 +241,12 @@ async receiveMessage(msg) {
         return {def, att}
     }
 
+
+    send(channel, embed){
+        try{
+            return channel.send({embeds: [embed]})
+        }catch (e) {
+            console.info("MESSAGE SEND ERROR");
+        }
+    }
 }
