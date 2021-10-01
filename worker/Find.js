@@ -244,7 +244,9 @@ async receiveMessage(msg) {
 
     send(channel, embed){
         try{
-            return channel.send({embeds: [embed]})
+            if(channel.guild.me.permissions.has('SEND_MESSAGES')){
+                return channel.send({embeds: [embed]})
+            }
         }catch (e) {
             console.info("MESSAGE SEND ERROR");
         }
