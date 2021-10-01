@@ -44,6 +44,29 @@ async receiveMessage(msg) {
     try {
         char = await this.findChar(server.id, nickname);
         const c = _.find(char, c => c.charName.replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
+
+
+
+        let url;
+        if (!char) {
+            url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
+        } else {
+            const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
+            if(c){
+                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
+            }else{
+                url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
+            }
+        }
+        this.send(msg.channel,
+            new Discord.MessageEmbed()
+                .setColor("RED")
+                .setURL(url)
+                .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
+        );
+
+
+
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
@@ -244,7 +267,9 @@ async receiveMessage(msg) {
 
     send(channel, embed){
         try{
-            if(channel.guild.me.permissions.has('SEND_MESSAGES')){
+            if(channel.guild.me.permissions.has('SEND_MESSAGES') &&
+                channel.guild.me.permissions.has('EMBED_LINKS')
+            ){
                 return channel.send({embeds: [embed]})
             }
         }catch (e) {
