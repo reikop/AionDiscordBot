@@ -14,6 +14,9 @@ export default class Find extends MessageWorker{
     }
 
 async receiveMessage(msg) {
+    if (!msg.author.bot){
+        msg.channel.sendTyping().then().catch();
+    }
     const content = msg.content.split(" ");
     const nickname = content[1];
     const servername = content[2];
