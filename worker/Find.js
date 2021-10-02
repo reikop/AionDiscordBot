@@ -7,10 +7,10 @@ import serverList from "../data/serverlist.js";
 import abyssItems from "../data/abyssItems.js";
 export default class Find extends MessageWorker{
 
-    _client;
-    constructor(client) {
+    _botID;
+    constructor(BOT_ID) {
         super();
-        this._client = client;
+        this._botID = BOT_ID;
     }
 
 async receiveMessage(msg) {
@@ -46,26 +46,6 @@ async receiveMessage(msg) {
     try {
         char = await this.findChar(server.id, nickname);
         const c = _.find(char, c => c.charName.replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
-        let url;
-        if (!char) {
-            url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
-        } else {
-            const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
-            if(c){
-                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
-            }else{
-                url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
-            }
-        }
-        this.send(msg.channel,
-            new Discord.MessageEmbed()
-                .setColor("RED")
-                .setURL(url)
-                .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
-        );
-
-
-
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
@@ -265,12 +245,20 @@ async receiveMessage(msg) {
 
 
     send(channel, embed){
-
-       channel.send({embeds: [embed]}).catch(error => {
+        const embeds = [embed];
+        if(this._botID == null || this._botID > 1){
+            const msg = new Discord.MessageEmbed()
+                .setTitle(`사용중인 아이온 헬퍼 검색 봇은 곧 종료 됩니다.`)
+                .setURL("https://discord.com/api/oauth2/authorize?client_id=828894960304128025&permissions=17179994112&scope=bot")
+                .setDescription(`위 링크를 클릭하여 새로운 봇을 \`추가\` 해주시고 \`아이온 헬퍼 검색 봇\`은 \`추방\`해주시기 바랍니다.`)
+            embeds.unshift(msg);
+        }
+        channel.send({embeds}).catch(error => {
            if(channel.guild){
                console.info(`${channel.guild.name} (${channel.guildId})`)
            }
            console.error(`${error.name} (${error.code}) : ${error.message}`);
-       })
+        });
+
     }
 }

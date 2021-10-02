@@ -11,6 +11,7 @@ const client = new Discord.Client({
 });
 const args = parser(process.argv);
 const DISCORD_KEY = args.key;
+const BOT_ID = args.bot;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -18,7 +19,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const router = new MessageRouter();
 router.registWorker("!서버", new Server());
 router.registWorker("!정리", new Trim(client));
-router.registWorker(["!누구", "!검색"], new Find(client));
+router.registWorker(["!누구", "!검색"], new Find(BOT_ID));
 // router.registWorker("*", new MusicPlayer(client));
 
 client.on('message', async msg => router.receiveMessage(msg));
