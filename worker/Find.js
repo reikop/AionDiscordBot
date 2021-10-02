@@ -7,8 +7,10 @@ import serverList from "../data/serverlist.js";
 import abyssItems from "../data/abyssItems.js";
 export default class Find extends MessageWorker{
 
-    constructor() {
+    _client;
+    constructor(client) {
         super();
+        this._client = client;
     }
 
 async receiveMessage(msg) {
@@ -44,9 +46,6 @@ async receiveMessage(msg) {
     try {
         char = await this.findChar(server.id, nickname);
         const c = _.find(char, c => c.charName.replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
-
-
-
         let url;
         if (!char) {
             url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
@@ -266,14 +265,12 @@ async receiveMessage(msg) {
 
 
     send(channel, embed){
-        try{
-            if(channel.guild.me.permissions.has('SEND_MESSAGES') &&
-                channel.guild.me.permissions.has('EMBED_LINKS')
-            ){
-                return channel.send({embeds: [embed]})
-            }
-        }catch (e) {
-            console.info("MESSAGE SEND ERROR");
-        }
+
+       channel.send({embeds: [embed]}).catch(error => {
+           if(channel.guild){
+               console.info(`${channel.guild.name} (${channel.guildId})`)
+           }
+           console.error(`${error.name} (${error.code}) : ${error.message}`);
+       })
     }
 }
