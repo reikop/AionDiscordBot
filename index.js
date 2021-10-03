@@ -4,7 +4,11 @@ import Server from "./worker/Server.js";
 import Find from "./worker/Find.js";
 import Trim from "./worker/Trim.js";
 import MessageRouter from "./MessageRouter.js";
-import MusicPlayer from "./worker/MusicPlayer.js";
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.on("uncaughtException", error => {
+    console.info("uncaughtException", error.message)
+})
 
 const client = new Discord.Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
@@ -13,7 +17,7 @@ const args = parser(process.argv);
 const DISCORD_KEY = args.key;
 const BOT_ID = args.bot;
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 
 
 const router = new MessageRouter();
