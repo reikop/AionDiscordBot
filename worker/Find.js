@@ -72,7 +72,7 @@ async receiveMessage(msg) {
         if (!char) {
             url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
         } else {
-            const c = _.find(char, c => c.charName.toUpperCase() === nickname.toUpperCase());
+            const c = _.find(char, c => (c.charName || "").toUpperCase() === nickname.toUpperCase());
             if(c){
                 url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
             }else{
