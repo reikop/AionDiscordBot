@@ -48,7 +48,7 @@ async receiveMessage(msg) {
     let char = null;
     try {
         char = await this.findChar(server.id, nickname);
-        const c = _.find(char, c => c.charName.replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
+        const c = _.find(char, c => (c.charName || "").replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
