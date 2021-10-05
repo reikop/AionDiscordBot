@@ -17,9 +17,6 @@ const args = parser(process.argv);
 const DISCORD_KEY = args.key;
 const BOT_ID = args.bot;
 
-
-
-
 const router = new MessageRouter();
 router.registWorker("!서버", new Server());
 router.registWorker("!정리", new Trim(client));

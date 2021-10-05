@@ -17,7 +17,7 @@ async receiveMessage(msg) {
     if (!msg.author.bot){
         msg.channel.sendTyping().then().catch();
     }
-    const content = msg.content.split(" ");
+    const content = msg.content.trim().split(" ");
     const nickname = content[1];
     const servername = content[2];
     let server;
@@ -31,16 +31,18 @@ async receiveMessage(msg) {
                         .addField("서버 확인 방법", "!서버")
                         .addField("서버 설정 방법", "!서버 서버이름")
                         .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                ,content
                 );
             return;
         }
     } else {
         server = _.find(serverList, {name: servername});
-        if (server == null) {
+        if (server == null || server.id == null) {
             this.send(msg.channel, new Discord.MessageEmbed()
                 .setColor("YELLOW")
                 .setTitle("정확한 이름을 작성해주세요")
-                .addField("서버 목록", serverList.map(s => s.name).join("\n")))
+                .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                ,content)
             return;
         }
     }
@@ -52,19 +54,21 @@ async receiveMessage(msg) {
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
-            this.send(msg.channel, this.getStatus(c, stat))
+            this.send(msg.channel, this.getStatus(c, stat),content)
         } else if (char != null) {
             this.send(msg.channel,
                     new Discord.MessageEmbed()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor("RED")
                         .addField('검색된 아이디', char.map(c => c.charName).join("\n"))
+                ,content
                 );
         } else {
             this.send(msg.channel,
                     new Discord.MessageEmbed()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor("RED")
+                ,content
             )
         }
     } catch (e) {
@@ -84,6 +88,7 @@ async receiveMessage(msg) {
                     .setColor("RED")
                     .setURL(url)
                     .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
+            ,content
             );
     }
 
@@ -247,7 +252,7 @@ async receiveMessage(msg) {
     }
 
 
-    send(channel, embed){
+    send(channel, embed, ...param){
         const embeds = [embed];
         if(this._botID == null || this._botID > 1){
             const msg = new Discord.MessageEmbed()
@@ -263,7 +268,7 @@ async receiveMessage(msg) {
                 if(channel.guild){
                     console.info(`${channel.guild.name} (${channel.guildId})`)
                 }
-                console.error(`${error.name} (${error.code}) : ${error.message}`);
+                console.error(`${error.name} (${error.code}) : ${error.message}`, param);
             });
         }
     }
