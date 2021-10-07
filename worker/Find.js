@@ -18,8 +18,8 @@ async receiveMessage(msg) {
         msg.channel.sendTyping().then().catch();
     }
     const content = msg.content.trim().split(" ");
-    const nickname = content[1];
-    const servername = content[2];
+    const nickname = content[1].trim();
+    const servername = content[2].trim();
     let server;
     if (servername == null) {
         server = await this.findServer(msg.channel.id);
@@ -265,10 +265,7 @@ async receiveMessage(msg) {
         }
         if(channel){
             channel.send({embeds}).catch(error => {
-                if(channel.guild){
-                    console.info(`${channel.guild.name} (${channel.guildId})`)
-                }
-                console.error(`${error.name} (${error.code}) : ${error.message}`, param);
+                console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
             });
         }
     }

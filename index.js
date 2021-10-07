@@ -7,7 +7,7 @@ import MessageRouter from "./MessageRouter.js";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 process.on("uncaughtException", error => {
-    console.info("uncaughtException", error)
+    console.info("ERROR", new Date().toLocaleString() , error)
 })
 
 const client = new Discord.Client({
