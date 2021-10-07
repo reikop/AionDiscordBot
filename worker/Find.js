@@ -60,7 +60,7 @@ async receiveMessage(msg) {
                     new Discord.MessageEmbed()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor("RED")
-                        .addField('검색된 아이디', char.map(c => c.charName).join("\n"))
+                        .addField('검색된 아이디', char.map(c => c.charName.replace(/(<([^>]+)>)/ig, '')).splice(0, 15).join("\n"))
                 ,content
                 );
         } else {
