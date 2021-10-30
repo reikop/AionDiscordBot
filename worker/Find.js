@@ -3,8 +3,7 @@ import Discord from "discord.js";
 import numeral from "numeral";
 import _ from "lodash";
 
-import serverList from "../data/serverlist.js";
-import abyssItems from "../data/abyssItems.js";
+import {CalculateEquipPvPStat, ServerUtils} from "aion-classic-lib";
 export default class Find extends MessageWorker{
 
     _botID;
@@ -18,8 +17,8 @@ async receiveMessage(msg) {
         msg.channel.sendTyping().then().catch();
     }
     const content = msg.content.trim().split(" ");
-    const nickname = content[1].trim();
-    const servername = content[2].trim();
+    const nickname = content[1];
+    const servername = content[2];
     let server;
     if (servername == null) {
         server = await this.findServer(msg.channel.id);
@@ -30,18 +29,27 @@ async receiveMessage(msg) {
                         .setColor("RED")
                         .addField("서버 확인 방법", "!서버")
                         .addField("서버 설정 방법", "!서버 서버이름")
-                        .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                        .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
+                ,content
+                );
+            return;
+        }else if (nickname == null) {
+            this.send(msg.channel,
+                    new Discord.MessageEmbed()
+                        .setTitle(`검색할 아이디가 없습니다.`)
+                        .setColor("RED")
+                        .addField("검색 방법", "!누구 아이디 서버\n!누구 아이디\n!검색 아이디 서버\n!검색 아이디")
                 ,content
                 );
             return;
         }
     } else {
-        server = _.find(serverList, {name: servername});
+        server = ServerUtils.findServerByName(servername);
         if (server == null || server.id == null) {
             this.send(msg.channel, new Discord.MessageEmbed()
                 .setColor("YELLOW")
                 .setTitle("정확한 이름을 작성해주세요")
-                .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
                 ,content)
             return;
         }
@@ -83,6 +91,7 @@ async receiveMessage(msg) {
                 url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
             }
         }
+        console.error(e)
         this.send(msg.channel,
                 new Discord.MessageEmbed()
                     .setColor("RED")
@@ -112,7 +121,7 @@ async receiveMessage(msg) {
     getStatList(char, stat){
         const totalStat = stat.character_stats.totalStat;
         const result = [];
-        const {def, att} = this.calcAbyss(stat.character_equipments);
+        const {def, att} = CalculateEquipPvPStat(stat.character_equipments);
 
         result.push({name: '생명력', value: numeral(totalStat.hp).format('0,0'), inline: true})
         result.push({name: '마법저항', value: numeral(totalStat.magicResist).format('0,0'), inline: true, warn: totalStat.magicResist > 1760})
@@ -132,8 +141,8 @@ async receiveMessage(msg) {
             result.push({name: '마법 치명타', value: numeral(totalStat.magicalCriticalRight).format('0,0'), inline: true, warn: totalStat.magicalCriticalRight > 100 })
         }
 
-        result.push({name: 'PVP공격력', value: att.toFixed(1) + "%", inline: true})
-        result.push({name: 'PVP방어력', value: def.toFixed(1) + "%", inline: true})
+        result.push({name: 'PVP공격력', value: att + "%", inline: true})
+        result.push({name: 'PVP방어력', value: def + "%", inline: true})
 
         result.push({name: '물치저항', value: numeral(totalStat.phyCriticalReduceRate).format('0,0'), inline: true})
         result.push({name: '물치방어', value: numeral(totalStat.phyCriticalDamageReduce).format('0,0'), inline: true})
@@ -175,7 +184,7 @@ async receiveMessage(msg) {
     async findServer(guildId){
         const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`);
         if(response && response.data){
-            return _.find(serverList, {'type': response.data.servers});
+            return ServerUtils.findServerById(response.data.servers);
         }else{
             return null;
         }
@@ -196,59 +205,6 @@ async receiveMessage(msg) {
             console.error('error', e)
             return [];
         }
-    }
-
-    calcAbyss(equips){
-        let def = 0;
-        let att = 0;
-        for(const equip of equips){
-            if( /(가디언|아칸)\s.부장/.test(equip.name)){
-                const type = /(십|백|천|만)부/.exec(equip.name)[1];
-                let level = 'TEN';
-                switch(type){
-                    case '십' :  level = 'TEN'; break;
-                    case '백' :  level = 'HUN'; break;
-                    case '천' :  level = 'THO'; break;
-                    case '만' :  level = 'THU'; break;
-                }
-                const item = abyssItems[level];
-                const category = [equip.category1.alias, equip.category2.alias, equip.category3.alias];
-                if(category[0] === 'ACCESSORY'){
-                    att += item[category[0]][category[1]];
-                }else if(category[0] === 'ARMOR'){
-                    if(category[1] === "HEAD"){
-                        def += item[category[0]][category[1]];
-                    }else if(category[1] === "SHIELD"){
-                        def += item[category[0]][category[1]];
-                    }else{
-                        def += item[category[0]][category[2]];
-                    }
-                }else if(category[0] === 'WEAPON'){
-                    let weaponType = 'BOTH';
-                    switch (category[1]) {
-                        case 'ORB' :
-                        case 'BOOK' :
-                        case 'TWOHANDSWORD' :
-                        case 'STAFF' :
-                        case 'BOW' :
-                        case 'POLEARM' :
-                            weaponType = 'BOTH'; break;
-                        case 'MACE' :
-                        case 'SWORD' :
-                        case 'DAGGER' :
-                            weaponType = 'RIGHT'; break;
-                    }
-                    att += item[category[0]][weaponType];
-                }
-            }else if(equip.name === '라크하네의 머리장식'){
-                def += 2;
-            }else if(equip.name.startsWith('뒤틀린 황천의')){
-                def += 2;
-            }else if(equip.name.startsWith('가디언 정찰대의')){
-                def += 1.6;
-            }
-        }
-        return {def, att}
     }
 
 

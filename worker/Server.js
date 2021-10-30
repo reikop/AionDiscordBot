@@ -1,8 +1,6 @@
 import MessageWorker from "../MessageWorker.js";
-import _ from "lodash";
 import Discord from "discord.js";
-import serverList from "../data/serverlist.js";
-
+import {ServerUtils} from "aion-classic-lib";
 export default class Server extends MessageWorker{
 
     constructor() {
@@ -14,7 +12,7 @@ export default class Server extends MessageWorker{
         const content = msg.content.split(" ");
         const servername = content[1];
         if (servername) {
-            const server = _.find(serverList, {name: servername});
+            const server = ServerUtils.findServerByName(servername);
             if (server) {
                 const params = new URLSearchParams();
                 params.append('server', server.type);
@@ -39,7 +37,7 @@ export default class Server extends MessageWorker{
                         new Discord.MessageEmbed()
                             .setColor("YELLOW")
                             .setTitle("정확한 이름을 작성해주세요")
-                            .addField("서버 목록", serverList.map(s => s.name).join("\n"))
+                            .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
                     ]})
             }
         } else {
@@ -61,7 +59,7 @@ export default class Server extends MessageWorker{
     async findServer(guildId){
         const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`);
         if(response && response.data){
-            return _.find(serverList, {'type': response.data.servers});
+            return ServerUtils.findServerById(response.data.servers);
         }else{
             return null;
         }
