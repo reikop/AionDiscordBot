@@ -191,7 +191,7 @@ async receiveMessage(msg) {
     }
     async findStat({serverId, charId}){
         const data = {"keyList":["character_stats","character_equipments","character_abyss","character_stigma"]};
-        const response = await this.api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data);
+        const response = await this.api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data)
         // const stats = await api.post(`/api/character/${server}/${userid}`);
         return response.data;
     }
@@ -202,7 +202,9 @@ async receiveMessage(msg) {
                 return data.documents;
             }
         }catch (e) {
-            console.error('error', e)
+            if (!(e.message === 'ETIMEDOUT' || e.message.code === 'ETIMEDOUT')){
+                console.error('error', e)
+            }
             return [];
         }
     }
@@ -210,15 +212,15 @@ async receiveMessage(msg) {
 
     send(channel, embed, ...param){
         const embeds = [embed];
-        if(this._botID == null || this._botID > 1){
-            const msg = new Discord.MessageEmbed()
-
-                .setTitle(`사용중인 아이온 헬퍼 검색 봇은 곧 종료 됩니다.`)
-                .setURL("https://discord.com/api/oauth2/authorize?client_id=828894960304128025&permissions=17179994112&scope=bot")
-                .setDescription(`위 링크를 클릭하여 새로운 봇을 \`추가\` 해주시고 \`아이온 헬퍼 검색 봇\`은 \`추방\`해주시기 바랍니다.`);
-
-            embeds.unshift(msg);
-        }
+        // if(this._botID == null || this._botID > 1){
+        //     const msg = new Discord.MessageEmbed()
+        //
+        //         .setTitle(`사용중인 아이온 헬퍼 검색 봇은 곧 종료 됩니다.`)
+        //         .setURL("https://discord.com/api/oauth2/authorize?client_id=828894960304128025&permissions=17179994112&scope=bot")
+        //         .setDescription(`위 링크를 클릭하여 새로운 봇을 \`추가\` 해주시고 \`아이온 헬퍼 검색 봇\`은 \`추방\`해주시기 바랍니다.`);
+        //
+        //     embeds.unshift(msg);
+        // }
         if(channel){
             channel.send({embeds}).catch(error => {
                 console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
