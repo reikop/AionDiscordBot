@@ -6,10 +6,8 @@ import _ from "lodash";
 import {CalculateEquipPvPStat, ServerUtils} from "aion-classic-lib";
 export default class Find extends MessageWorker{
 
-    _botID;
-    constructor(BOT_ID) {
+    constructor() {
         super();
-        this._botID = BOT_ID;
     }
 
 async receiveMessage(msg) {
