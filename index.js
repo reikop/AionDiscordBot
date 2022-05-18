@@ -4,10 +4,12 @@ import Server from "./worker/Server.js";
 import Find from "./worker/Find.js";
 import Trim from "./worker/Trim.js";
 import MessageRouter from "./MessageRouter.js";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-process.on("uncaughtException", error => {
-    console.info("ERROR", new Date().toLocaleString() , error)
-})
+//
+// process.on("uncaughtException", error => {
+//     console.info("ERROR", new Date().toLocaleString() , error)
+// })
 
 const client = new Discord.Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]

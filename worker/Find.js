@@ -89,7 +89,7 @@ async receiveMessage(msg) {
                 url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
             }
         }
-        console.error(e)
+        console.error(e.response?.status, 'ERROR ->\'',msg,'\' : ', e.message);
         this.send(msg.channel,
                 new Discord.MessageEmbed()
                     .setColor("RED")
@@ -201,7 +201,7 @@ async receiveMessage(msg) {
             }
         }catch (e) {
             if (!(e.message === 'ETIMEDOUT' || e.message.code === 'ETIMEDOUT')){
-                console.error('error', e)
+                console.error(e.response?.status, 'ERROR ->\'',server,name,'\' : ', e.message);
             }
             return [];
         }
