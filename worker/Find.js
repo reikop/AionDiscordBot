@@ -104,9 +104,13 @@ async receiveMessage(msg) {
     getStatus(char, stat){
         const serverid = char.serverId;
         return new Discord.MessageEmbed()
-            .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
-                null,
-                `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
+            // .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
+            //     null,
+            //     `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
+            .setAuthor({
+                name: ` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
+                url: `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`
+            })
             .setTitle(`Lv.${char.level} ${char.charName} ${char.legionName ? `<${char.legionName}>` : ''}`)
             .setColor("RANDOM")
             .setThumbnail(char.profileImg)

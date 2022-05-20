@@ -1,4 +1,3 @@
-import parser from "args-parser";
 import Discord, {Intents} from "discord.js";
 import Server from "./worker/Server.js";
 import Find from "./worker/Find.js";
