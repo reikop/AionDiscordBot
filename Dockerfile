@@ -7,4 +7,4 @@ COPY package.json /usr/src/bot
 RUN npm install
 COPY . /usr/src/bot
 
-ENTRYPOINT ["node", "bot.js"]
+ENTRYPOINT ["node", "index.js"]
