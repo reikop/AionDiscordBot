@@ -1,26 +1,24 @@
-const { Client, Intents } = require('discord.js');
-const MessageRouter = require("./MessageRouter");
-const Server = require("./worker/Server");
-const Trim = require("./worker/Trim");
-const Find = require("./worker/Find");
-const DISCORD_KEY = process.env.DISCORD_TOKEN;
+import Discord, {Intents} from "discord.js";
+import Server from "./worker/Server.js";
+import Find from "./worker/Find.js";
+import Trim from "./worker/Trim.js";
+import MessageRouter from "./MessageRouter.js";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+//
+// process.on("uncaughtException", error => {
+//     console.info("ERROR", new Date().toLocaleString() , error)
+// })
 
-client.on('interactionCreate', interaction => {
-    if (!interaction.isCommand()) return;
-
-    const { commandName } = interaction;
-
-    if (commandName === '!stats') {
-        return interaction.reply(`Server count: ${client.guilds.cache.size}.`);
-    }
-
-    const router = new MessageRouter();
-    router.registWorker("!서버", new Server());
-    router.registWorker("!정리", new Trim(client));
-    router.registWorker(["!누구", "!검색"], new Find());
-
+const client = new Discord.Client({
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
 });
+const DISCORD_KEY = process.env.DISCORD_TOKEN;
+const router = new MessageRouter();
+router.registWorker("!서버", new Server());
+router.registWorker("!정리", new Trim(client));
+router.registWorker(["!누구", "!검색"], new Find());
+// router.registWorker("*", new MusicPlayer(client));
 
+client.on('message', async msg => router.receiveMessage(msg));
 client.login(DISCORD_KEY);
