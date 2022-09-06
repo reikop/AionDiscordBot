@@ -1,5 +1,5 @@
 import MessageWorker from "../MessageWorker.js";
-import Discord from "discord.js";
+import {EmbedBuilder} from "discord.js";
 import numeral from "numeral";
 import _ from "lodash";
 
@@ -9,46 +9,51 @@ export default class Find extends MessageWorker{
     constructor() {
         super();
     }
-
-async receiveMessage(msg) {
-    if (!msg.author.bot){
-        msg.channel.sendTyping().then().catch();
-    }
-    const content = msg.content.trim().split(" ");
-    const nickname = content[1];
-    const servername = content[2];
+    /**
+     *
+     * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
+     */
+    async receiveInteraction(interaction) {
+    const guildId = interaction.guildId;
+    const nickname = interaction.options.getString("케릭터");
+    const servername = interaction.options.getString("서버");
     let server;
     if (servername == null) {
-        server = await this.findServer(msg.channel.id);
+        server = await this.findServer(guildId);
         if (server == null) {
-            this.send(msg.channel,
-                    new Discord.MessageEmbed()
+            this.send(interaction.channel,
+                    new EmbedBuilder()
                         .setTitle(`설정된 서버가 없습니다.`)
-                        .setColor("RED")
-                        .addField("서버 확인 방법", "!서버")
-                        .addField("서버 설정 방법", "!서버 서버이름")
-                        .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
-                ,content
+                        .setColor(0xff0000)
+                        .addFields(
+                            {name:'서버 확인 방법', value:'/서버'},
+                            {name:'서버 설정 방법', value:'/서버 서버이름'},
+                            {name:'서버 목록', value: ServerUtils.getServerList().map(s => s.name).join("\n")},
+                        )
+                        // .addField("서버 확인 방법", "!서버")
+                        // .addField("서버 설정 방법", "!서버 서버이름")
+                        // .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
+                ,interaction
                 );
             return;
         }else if (nickname == null) {
-            this.send(msg.channel,
-                    new Discord.MessageEmbed()
+            this.send(interaction.channel,
+                    new EmbedBuilder()
                         .setTitle(`검색할 아이디가 없습니다.`)
-                        .setColor("RED")
-                        .addField("검색 방법", "!누구 아이디 서버\n!누구 아이디\n!검색 아이디 서버\n!검색 아이디")
-                ,content
+                        .setColor(0xff0000)
+                        .addFields({name:"검색 방법", value:"!누구 아이디 서버\n!누구 아이디\n!검색 아이디 서버\n!검색 아이디"})
+                ,interaction
                 );
             return;
         }
     } else {
         server = ServerUtils.findServerByName(servername);
         if (server == null || server.id == null) {
-            this.send(msg.channel, new Discord.MessageEmbed()
-                .setColor("YELLOW")
+            this.send(interaction.channel, new EmbedBuilder()
+                .setColor(0xff00ff)
                 .setTitle("정확한 이름을 작성해주세요")
-                .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
-                ,content)
+                .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.name).join("\n")})
+                ,interaction)
             return;
         }
     }
@@ -60,21 +65,24 @@ async receiveMessage(msg) {
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
-            this.send(msg.channel, this.getStatus(c, stat),content)
+            this.send(interaction.channel, this.getStatus(c, stat),interaction)
         } else if (char != null) {
-            this.send(msg.channel,
-                    new Discord.MessageEmbed()
+            this.send(interaction.channel,
+                    new EmbedBuilder()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
-                        .setColor("RED")
-                        .addField('검색된 아이디', char.map(c => c.charName.replace(/(<([^>]+)>)/ig, '')).splice(0, 15).join("\n"))
-                ,content
+                        .setColor(0xff0000)
+                        .addFields({
+                            name:'검색된 아이디', value:char.map(c => c.charName.replace(/(<([^>]+)>)/ig, '')).splice(0, 15).join("\n")
+                        })
+
+                ,interaction
                 );
         } else {
-            this.send(msg.channel,
-                    new Discord.MessageEmbed()
+            this.send(interaction.channel,
+                    new EmbedBuilder()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
-                        .setColor("RED")
-                ,content
+                        .setColor(0xff0000)
+                ,interaction
             )
         }
     } catch (e) {
@@ -89,21 +97,24 @@ async receiveMessage(msg) {
                 url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
             }
         }
-        console.error(e.response?.status, 'ERROR ->\'',msg,'\' : ', e.message);
-        this.send(msg.channel,
-                new Discord.MessageEmbed()
-                    .setColor("RED")
+
+        // console.error(e.response?.status, 'ERROR ->\'',interaction.message,'\' : ', e.message);
+        this.send(interaction.channel,
+                new EmbedBuilder()
+                    .setColor(0xff0000)
                     .setURL(url)
                     .setTitle("아이온 서버가 응답하지 않습니다.\n클릭하여 공홈에서 검색합니다.")
-            ,content
+            ,interaction
             );
     }
+
+    interaction.reply('검색 결과를 가져왔습니다.')
 
 }
 
     getStatus(char, stat){
         const serverid = char.serverId;
-        return new Discord.MessageEmbed()
+        return new EmbedBuilder()
             // .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
             //     null,
             //     `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
@@ -112,11 +123,12 @@ async receiveMessage(msg) {
                 url: `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`
             })
             .setTitle(`Lv.${char.level} ${char.charName} ${char.legionName ? `<${char.legionName}>` : ''}`)
-            .setColor("RANDOM")
+            .setColor(Math.floor(Math.random()*16777215))
             .setThumbnail(char.profileImg)
-            .addField('주요 능력치', this.getStatList(char, stat).join("\n"), true)
-            .addField("장착 스티그마", this.getStigmaList(char, stat).join("\n") || '장착된 스티그마가 없습니다.', true)
-            .addField("장착 아이템", this.getItemList(char, stat).join("\n") || '장착된 아이템이 없습니다.')
+            .addFields(
+                {name: '주요 능력치', value:this.getStatList(char, stat).join("\n"), inline:true},
+                {name:"장착 스티그마", value:this.getStigmaList(char, stat).join("\n") || '장착된 스티그마가 없습니다.', inline:true},
+                {name:"장착 아이템", value:this.getItemList(char, stat).join("\n") || '장착된 아이템이 없습니다.'})
             .setTimestamp()
             .setURL(`https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
     }
@@ -184,7 +196,7 @@ async receiveMessage(msg) {
         return 'P';
     }
     async findServer(guildId){
-        const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`);
+        const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`).catch(e => console.error("findserver",e));
         if(response && response.data){
             return ServerUtils.findServerById(response.data.servers);
         }else{
@@ -215,7 +227,7 @@ async receiveMessage(msg) {
     send(channel, embed, ...param){
         const embeds = [embed];
         // if(this._botID == null || this._botID > 1){
-        //     const msg = new Discord.MessageEmbed()
+        //     const msg = new EmbedBuilder()
         //
         //         .setTitle(`사용중인 아이온 헬퍼 검색 봇은 곧 종료 됩니다.`)
         //         .setURL("https://discord.com/api/oauth2/authorize?client_id=828894960304128025&permissions=17179994112&scope=bot")

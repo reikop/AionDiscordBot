@@ -14,7 +14,23 @@ export default class MessageRouter{
         }
     }
 
+    /**
+     *
+     * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
+     */
+    receiveInteraction(interaction){
+        const command = interaction.commandName.trim();
+        Object.keys(this.router).forEach(key => {
+            if(command.startsWith(key)){
+                this.router[key].receiveInteraction(interaction);
+            }else if(key === "*"){
+                this.router[key].receiveInteraction(interaction);
+            }
+        })
+    }
+
     receiveMessage(msg) {
+        console.info(msg)
         if(msg.author.id === '366297167247310860'){
             
         }
