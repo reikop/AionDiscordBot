@@ -24,7 +24,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName('누구')
         .setDescription('`/누구 동매`, `/누구 동매 네자칸` 형식으로 사용자를 검색합니다.')
-        .addStringOption(o => o.setName("케릭터").setDescription("검색할 케릭터 명").setRequired(true))
+        .addStringOption(o => o.setName("케릭터").setDescription("검색할 케릭터 명, `TAB`키 누르고 서버 명").setRequired(true))
         .addStringOption(o => o.setName("서버").setDescription("(`네자칸`, `네`) 저장한 서버 대신 새로 검색할 서버 명").setRequired(false))
 ].map(n => n.toJSON());
 
@@ -43,6 +43,6 @@ client.on('interactionCreate', async interaction => {
 client.login(DISCORD_KEY);
 const rest = new REST({ version: '10' }).setToken(DISCORD_KEY);
 rest.put(
-    Routes.applicationCommands('841190119355842630'),
+    Routes.applicationCommands('828894960304128025'),
     { body: commands },
 );

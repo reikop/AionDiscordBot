@@ -45,12 +45,14 @@ export default class Server extends MessageWorker{
                 await interaction.channel.send({embeds: [new EmbedBuilder()
                         .setColor(0xffff00)
                         .setTitle(`설정된 서버는 ${server.name}입니다.`)]});
+                interaction.reply(`설정된 서버는 ${server.name}입니다.`);
             } else {
                 await interaction.channel.send({
                     embeds: [new EmbedBuilder()
                         .setColor(0xffff00)
                         .setTitle(`설정된 서버가 없습니다.`)]
-                })
+                });
+                interaction.reply('설정된 서버가 없습니다.');
             }
         }
     }
