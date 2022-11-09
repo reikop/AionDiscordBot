@@ -196,7 +196,7 @@ export default class Find extends MessageWorker{
         return 'P';
     }
     async findServer(guildId){
-        const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`).catch(e => console.error("findserver",e));
+        const response = await this.api.get(`https://reikop.io/api/server/${guildId}`).catch(e => console.error("findserver",e));
         if(response && response.data){
             return ServerUtils.findServerById(response.data.servers);
         }else{

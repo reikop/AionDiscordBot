@@ -19,7 +19,7 @@ export default class Server extends MessageWorker{
                 const params = new URLSearchParams();
                 params.append('server', server.type);
                 try{
-                    await this.api.patch("https://reikop.com:8081/api/server/" + guildId, params);
+                    await this.api.patch("https://reikop.io/api/server/" + guildId, params);
                     await interaction.channel.send({embeds: [new EmbedBuilder()
                             .setColor(0x0000ff)
                             .setTitle(servername + "서버가 지정되었습니다.")
@@ -36,7 +36,7 @@ export default class Server extends MessageWorker{
                         new EmbedBuilder()
                             .setColor(0xffff00)
                             .setTitle("정확한 이름을 작성해주세요")
-                            .addField("서버 목록", ServerUtils.getServerList().map(s => s.name).join("\n"))
+                            .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.name).join("\n")})
                     ]})
             }
         } else {
@@ -57,7 +57,7 @@ export default class Server extends MessageWorker{
         }
     }
     async findServer(guildId){
-        const response = await this.api.get(`https://reikop.com:8081/api/server/${guildId}`);
+        const response = await this.api.get(`https://reikop.io/api/server/${guildId}`);
         if(response && response.data){
             return ServerUtils.findServerById(response.data.servers);
         }else{

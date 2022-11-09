@@ -34,7 +34,7 @@ export default class Server extends MessageWorker {
         }
     }
     async clearUnusedServer() {
-        const response = await this.api.get(`https://reikop.com:8081/api/server`)
+        const response = await this.api.get(`https://reikop.io/api/server`)
         const servers = [];
         const leaveServers = [];
         this.client.channels.cache.forEach(channel => {
