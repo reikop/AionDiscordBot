@@ -31,8 +31,8 @@ client.on('interactionCreate', async interaction => {
 client.login(DISCORD_KEY);
 const rest = new REST({ version: '10' }).setToken(DISCORD_KEY);
 rest.put(
-    // Routes.applicationCommands('841190119355842630'),
-    Routes.applicationCommands('828894960304128025'),
+    Routes.applicationCommands('841190119355842630'),
+    // Routes.applicationCommands('828894960304128025'),
     { body: [
             new SlashCommandBuilder()
                 .setName('서버')
@@ -47,14 +47,14 @@ rest.put(
                 .addStringOption(o => o.setName("서버").setDescription("(`네자칸`, `네`) 저장한 서버 대신 새로 검색할 서버 명").setRequired(false))
         ].map(n => n.toJSON()) },
 );
-rest.put(
-    // Routes.applicationGuildCommands('841190119355842630', '386195373326204948'),
-    Routes.applicationGuildCommands('828894960304128025', '386195373326204948'),
-    { body: [
-            new SlashCommandBuilder()
-                .setName('발행')
-                .setDescription('전체 메시지 발송')
-                .addStringOption(o => o
-                    .setName("할말").setDescription('머라할뀨 전체말임').setRequired(true))
-        ].map(n => n.toJSON()) },
-);
+// rest.put(
+//     Routes.applicationGuildCommands('841190119355842630', '386195373326204948'),
+//     // Routes.applicationGuildCommands('828894960304128025', '386195373326204948'),
+//     { body: [
+//             new SlashCommandBuilder()
+//                 .setName('발행')
+//                 .setDescription('전체 메시지 발송')
+//                 .addStringOption(o => o
+//                     .setName("할말").setDescription('머라할뀨 전체말임').setRequired(true))
+//         ].map(n => n.toJSON()) },
+// );

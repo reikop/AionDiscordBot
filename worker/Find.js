@@ -21,7 +21,7 @@ export default class Find extends MessageWorker{
     if (servername == null) {
         server = await this.findServer(guildId);
         if (server == null) {
-            this.send(interaction.channel,
+            this.send(interaction,
                     new EmbedBuilder()
                         .setTitle(`설정된 서버가 없습니다.`)
                         .setColor(0xff0000)
@@ -37,7 +37,7 @@ export default class Find extends MessageWorker{
                 );
             return;
         }else if (nickname == null) {
-            this.send(interaction.channel,
+            this.send(interaction,
                     new EmbedBuilder()
                         .setTitle(`검색할 아이디가 없습니다.`)
                         .setColor(0xff0000)
@@ -49,7 +49,7 @@ export default class Find extends MessageWorker{
     } else {
         server = ServerUtils.findServerByName(servername);
         if (server == null || server.id == null) {
-            this.send(interaction.channel, new EmbedBuilder()
+            this.send(interaction, new EmbedBuilder()
                 .setColor(0xff00ff)
                 .setTitle("정확한 이름을 작성해주세요")
                 .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.name).join("\n")})
@@ -65,9 +65,9 @@ export default class Find extends MessageWorker{
         if (c != null) {
             c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
-            this.send(interaction.channel, this.getStatus(c, stat),interaction)
+            this.send(interaction, this.getStatus(c, stat),interaction)
         } else if (char != null) {
-            this.send(interaction.channel,
+            this.send(interaction,
                     new EmbedBuilder()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor(0xff0000)
@@ -78,7 +78,7 @@ export default class Find extends MessageWorker{
                 ,interaction
                 );
         } else {
-            this.send(interaction.channel,
+            this.send(interaction,
                     new EmbedBuilder()
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor(0xff0000)
@@ -99,7 +99,7 @@ export default class Find extends MessageWorker{
         }
 
         // console.error(e.response?.status, 'ERROR ->\'',interaction.message,'\' : ', e.message);
-        this.send(interaction.channel,
+        this.send(interaction,
                 new EmbedBuilder()
                     .setColor(0xff0000)
                     .setURL(url)
@@ -108,7 +108,7 @@ export default class Find extends MessageWorker{
             );
     }
 
-    interaction.reply('검색 결과를 가져왔습니다.')
+    // interaction.reply('검색 결과를 가져왔습니다.')
 
 }
 
@@ -223,8 +223,13 @@ export default class Find extends MessageWorker{
         }
     }
 
-
-    send(channel, embed, ...param){
+    /**
+     *
+     * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
+     * @param embed
+     * @param param
+     */
+    send(interaction, embed, ...param){
         const embeds = [embed];
         // if(this._botID == null || this._botID > 1){
         //     const msg = new EmbedBuilder()
@@ -235,8 +240,12 @@ export default class Find extends MessageWorker{
         //
         //     embeds.unshift(msg);
         // }
-        if(channel){
-            channel.send({embeds}).catch(error => {
+        if(interaction.channel){
+            interaction.channel.send({embeds}).catch(error => {
+                console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
+            });
+        }else{
+            interaction.reply({embeds}).catch(error => {
                 console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
             });
         }

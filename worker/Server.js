@@ -20,19 +20,19 @@ export default class Server extends MessageWorker{
                 params.append('server', server.type);
                 try{
                     await this.api.patch("https://reikop.io/api/server/" + guildId, params);
-                    await interaction.channel.send({embeds: [new EmbedBuilder()
+                    await interaction.reply({embeds: [new EmbedBuilder()
                             .setColor(0x0000ff)
                             .setTitle(servername + "서버가 지정되었습니다.")
                             .setDescription("앞으로 " + servername + '서버에서 검색을 진행합니다.')]})
                 }catch (e) {
-                    await interaction.channel.send({embeds: [new EmbedBuilder()
+                    await interaction.reply({embeds: [new EmbedBuilder()
                             .setColor(0xff0000)
                             .setTitle(servername + "서버 등록 중 오류가 발생 했습니다..")
                             .setDescription(e)]})
                 }
 
             } else {
-                await interaction.channel.send({embeds: [
+                await interaction.reply({embeds: [
                         new EmbedBuilder()
                             .setColor(0xffff00)
                             .setTitle("정확한 이름을 작성해주세요")
@@ -42,17 +42,18 @@ export default class Server extends MessageWorker{
         } else {
             const server = await this.findServer(guildId);
             if (server) {
-                await interaction.channel.send({embeds: [new EmbedBuilder()
+                // console.info(interaction.reply())
+                await interaction.reply({embeds: [new EmbedBuilder()
                         .setColor(0xffff00)
                         .setTitle(`설정된 서버는 ${server.name}입니다.`)]});
-                interaction.reply(`설정된 서버는 ${server.name}입니다.`);
+                // interaction.reply(`설정된 서버는 ${server.name}입니다.`);
             } else {
-                await interaction.channel.send({
+                await interaction.reply({
                     embeds: [new EmbedBuilder()
                         .setColor(0xffff00)
                         .setTitle(`설정된 서버가 없습니다.`)]
                 });
-                interaction.reply('설정된 서버가 없습니다.');
+                // interaction.reply('설정된 서버가 없습니다.');
             }
         }
     }
