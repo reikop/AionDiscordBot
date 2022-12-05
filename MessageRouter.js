@@ -18,12 +18,13 @@ export default class MessageRouter{
      *
      * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
      */
-    receiveInteraction(interaction){
+    async receiveInteraction(interaction) {
         const command = interaction.commandName.trim();
+        await interaction.deferReply();
         Object.keys(this.router).forEach(key => {
-            if(command.startsWith(key)){
+            if (command.startsWith(key)) {
                 this.router[key].receiveInteraction(interaction);
-            }else if(key === "*"){
+            } else if (key === "*") {
                 this.router[key].receiveInteraction(interaction);
             }
         })

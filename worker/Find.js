@@ -241,11 +241,12 @@ export default class Find extends MessageWorker{
         //     embeds.unshift(msg);
         // }
         if(interaction.channel){
+            interaction.followUp("검색 결과입니다.");
             interaction.channel.send({embeds}).catch(error => {
                 console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
             });
         }else{
-            interaction.reply({embeds}).catch(error => {
+            interaction.editReply({embeds}).catch(error => {
                 console.error(`[${new Date().toLocaleString()}] ${error.name} (${error.code}) : ${error.message}`, param);
             });
         }

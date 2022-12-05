@@ -144,7 +144,9 @@ export default class MusicPlayer extends MessageWorker {
     async addMusicServer({guildId, id}){
         const params = new URLSearchParams();
         params.append('id', id);
-        await this.api.patch("https://reikop.io/api/music/" + guildId, params);
+        await this.api.patch("https://reikop.io/api/music/" + guildId, null, {
+            params: {id}
+        });
         await this.getMusicServerLists();
     }
 
