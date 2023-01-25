@@ -14,7 +14,7 @@ export default class Find extends MessageWorker{
      * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
      */
     async receiveInteraction(interaction) {
-    const guildId = interaction.guildId;
+    const guildId = interaction.channelId;
     const nickname = interaction.options.getString("케릭터");
     const servername = interaction.options.getString("서버");
     let server;

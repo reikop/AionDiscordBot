@@ -11,7 +11,7 @@ export default class Server extends MessageWorker{
      * @param interaction{ ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<CacheType> | SelectMenuInteraction<CacheType> | ButtonInteraction<CacheType> | AutocompleteInteraction<CacheType> | ModalSubmitInteraction<CacheType>}
      */
     async receiveInteraction(interaction) {
-        const guildId = interaction.guildId;
+        const guildId = interaction.channelId;
         const servername = interaction.options.getString('이름');
         if (servername) {
             const server = ServerUtils.findServerByName(servername);
