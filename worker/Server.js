@@ -1,6 +1,6 @@
 import MessageWorker from "../MessageWorker.js";
 import {EmbedBuilder, Embed} from "discord.js";
-import {ServerUtils} from "aion-classic-lib";
+import ServerUtils from "../ServerUtils.js";
 export default class Server extends MessageWorker{
 
     constructor() {
@@ -19,7 +19,7 @@ export default class Server extends MessageWorker{
                 try{
                     await this.api.patch("https://reikop.io/api/server/" + guildId, null, {
                         params: {
-                            server : server.type
+                            server : server.serverId
                         }
                     });
                     await interaction.editReply({embeds: [new EmbedBuilder()
@@ -34,11 +34,12 @@ export default class Server extends MessageWorker{
                 }
 
             } else {
+                const serverlist = ServerUtils.getServerList().map(s => s.serverName).join("\n");
                 await interaction.editReply({embeds: [
                         new EmbedBuilder()
                             .setColor(0xffff00)
                             .setTitle("정확한 이름을 작성해주세요")
-                            .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.name).join("\n")})
+                            .addFields({name:"서버 목록", value: serverlist})
                     ]})
             }
         } else {
@@ -47,7 +48,7 @@ export default class Server extends MessageWorker{
                 // console.info(interaction.editReply())
                 await interaction.editReply({embeds: [new EmbedBuilder()
                         .setColor(0xffff00)
-                        .setTitle(`설정된 서버는 ${server.name}입니다.`)]});
+                        .setTitle(`설정된 서버는 ${server.serverName}입니다.`)]});
                 // interaction.editReply(`설정된 서버는 ${server.name}입니다.`);
             } else {
                 await interaction.editReply({
@@ -62,10 +63,12 @@ export default class Server extends MessageWorker{
     async findServer(guildId){
         const response = await this.api.get(`https://reikop.io/api/server/${guildId}`);
         if(response && response.data){
-            return ServerUtils.findServerById(response.data.servers);
+            return response.data
         }else{
             return null;
         }
     }
+
+
 
 }

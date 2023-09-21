@@ -4,14 +4,16 @@ import Server from "./worker/Server.js";
 import Find from "./worker/Find.js";
 import MessageRouter from "./MessageRouter.js";
 import Publish from "./worker/Publish.js";
+import ServerUtils from "./ServerUtils.js";
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const DISCORD_KEY = process.env.DISCORD_TOKEN;
 const DISCORD_ID = process.env.DISCORD_ID;
-
-
 const router = new MessageRouter();
+
+ServerUtils.init();
+
 router.registWorker("서버",new Server());
 router.registWorker(["누구", "검색"], new Find());
 router.registWorker("발행", new Publish(client));

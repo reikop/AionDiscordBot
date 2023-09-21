@@ -2,8 +2,8 @@ import MessageWorker from "../MessageWorker.js";
 import {EmbedBuilder} from "discord.js";
 import numeral from "numeral";
 import _ from "lodash";
+import ServerUtils from "../ServerUtils.js";
 
-import {CalculateEquipPvPStat, ServerUtils} from "aion-classic-lib";
 export default class Find extends MessageWorker{
 
     constructor() {
@@ -28,7 +28,7 @@ export default class Find extends MessageWorker{
                         .addFields(
                             {name:'서버 확인 방법', value:'/서버'},
                             {name:'서버 설정 방법', value:'/서버 서버이름'},
-                            {name:'서버 목록', value: ServerUtils.getServerList().map(s => s.name).join("\n")},
+                            {name:'서버 목록', value: ServerUtils.getServerList().map(s => s.serverName).join("\n")},
                         )
                         // .addField("서버 확인 방법", "!서버")
                         // .addField("서버 설정 방법", "!서버 서버이름")
@@ -48,11 +48,11 @@ export default class Find extends MessageWorker{
         }
     } else {
         server = ServerUtils.findServerByName(servername);
-        if (server == null || server.id == null) {
+        if (server == null || server.servers == null) {
             this.send(interaction, new EmbedBuilder()
                 .setColor(0xff00ff)
                 .setTitle("정확한 이름을 작성해주세요")
-                .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.name).join("\n")})
+                .addFields({name:"서버 목록", value:ServerUtils.getServerList().map(s => s.serverName).join("\n")})
                 ,interaction)
             return;
         }
@@ -60,10 +60,10 @@ export default class Find extends MessageWorker{
 
     let char = null;
     try {
-        char = await this.findChar(server.id, nickname);
-        const c = _.find(char, c => (c.charName || "").replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
+        char = await this.findChar(server.servers, nickname);
+        const c = _.find(char, c => (c.name || "").replace(/(<([^>]+)>)/ig, "").toUpperCase() === nickname.toUpperCase());
         if (c != null) {
-            c.charName = c.charName.replace(/(<([^>]+)>)/ig, "");
+            c.name = c.name.replace(/(<([^>]+)>)/ig, "");
             const stat = await this.findStat(c);
             this.send(interaction, this.getStatus(c, stat),interaction)
         } else if (char != null) {
@@ -72,7 +72,7 @@ export default class Find extends MessageWorker{
                         .setTitle(`${nickname}님을 찾을수 없습니다.`)
                         .setColor(0xff0000)
                         .addFields({
-                            name:'검색된 아이디', value:char.map(c => c.charName.replace(/(<([^>]+)>)/ig, '')).splice(0, 15).join("\n")
+                            name:'검색된 아이디', value:char.map(c => c.name.replace(/(<([^>]+)>)/ig, '')).splice(0, 15).join("\n")
                         })
 
                 ,interaction
@@ -88,13 +88,13 @@ export default class Find extends MessageWorker{
     } catch (e) {
         let url;
         if (!char) {
-            url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.id}&site=aion&sort=level&world=classic`
+            url = `https://aion.plaync.com/search/characters/name?&query=${nickname}&serverId=${server.servers}&site=aion&sort=level&world=classic`
         } else {
-            const c = _.find(char, c => (c.charName || "").toUpperCase() === nickname.toUpperCase());
+            const c = _.find(char, c => (c.name || "").toUpperCase() === nickname.toUpperCase());
             if(c){
-                url = `https://aion.plaync.com/characters/server/${server.id}/id/${c.charId}/home`
+                url = `https://aion.plaync.com/characters/server/${server.servers}/id/${c.characterId}/home`
             }else{
-                url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.id}&sort=rank&world=classic`;
+                url = `https://aion.plaync.com/search/characters/name?classId=&pageNo=1&pageSize=20&query=${nickname}=&serverId=${server.servers}&sort=rank&world=classic`;
             }
         }
 
@@ -117,25 +117,25 @@ export default class Find extends MessageWorker{
         return new EmbedBuilder()
             // .setAuthor(` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
             //     null,
-            //     `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
+            //     `https://aion.plaync.com/characters/server/${serverid}/id/${char.characterId}/home`)
             .setAuthor({
                 name: ` ${char.serverName} ${char.raceName} ${stat.character_abyss.rankName} ${char.className}`,
-                url: `https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`
+                url: `https://aion.plaync.com/characters/server/${serverid}/id/${char.characterId}/home`
             })
-            .setTitle(`Lv.${char.level} ${char.charName} ${char.legionName ? `<${char.legionName}>` : ''}`)
+            .setTitle(`Lv.${char.level} ${char.name} ${char.legionName ? `<${char.legionName}>` : ''}`)
             .setColor(Math.floor(Math.random()*16777215))
-            .setThumbnail(char.profileImg)
+            .setThumbnail(char.profileImageFullUrl)
             .addFields(
                 {name: '주요 능력치', value:this.getStatList(char, stat).join("\n"), inline:true},
                 {name:"장착 스티그마", value:this.getStigmaList(char, stat).join("\n") || '장착된 스티그마가 없습니다.', inline:true},
                 {name:"장착 아이템", value:this.getItemList(char, stat).join("\n") || '장착된 아이템이 없습니다.'})
             .setTimestamp()
-            .setURL(`https://aion.plaync.com/characters/server/${serverid}/id/${char.charId}/home`)
+            .setURL(`https://aion.plaync.com/characters/server/${serverid}/id/${char.characterId}/home`)
     }
     getStatList(char, stat){
         const totalStat = stat.character_stats.totalStat;
         const result = [];
-        const {def, att} = CalculateEquipPvPStat(stat.character_equipments);
+        // const {def, att} = CalculateEquipPvPStat(stat.character_equipments);
 
         result.push({name: '생명력', value: numeral(totalStat.hp).format('0,0'), inline: true})
         result.push({name: '마법저항', value: numeral(totalStat.magicResist).format('0,0'), inline: true, warn: totalStat.magicResist > 1760})
@@ -155,8 +155,8 @@ export default class Find extends MessageWorker{
             result.push({name: '마법 치명타', value: numeral(totalStat.magicalCriticalRight).format('0,0'), inline: true, warn: totalStat.magicalCriticalRight > 100 })
         }
 
-        result.push({name: 'PVP공격력', value: att + "%", inline: true})
-        result.push({name: 'PVP방어력', value: def + "%", inline: true})
+        // result.push({name: 'PVP공격력', value: att + "%", inline: true})
+        // result.push({name: 'PVP방어력', value: def + "%", inline: true})
 
         result.push({name: '물치저항', value: numeral(totalStat.phyCriticalReduceRate).format('0,0'), inline: true})
         result.push({name: '물치방어', value: numeral(totalStat.phyCriticalDamageReduce).format('0,0'), inline: true})
@@ -198,22 +198,24 @@ export default class Find extends MessageWorker{
     async findServer(guildId){
         const response = await this.api.get(`https://reikop.io/api/server/${guildId}`).catch(e => console.error("findserver",e));
         if(response && response.data){
-            return ServerUtils.findServerById(response.data.servers);
+            // return ServerUtils.findServerById(response.data.servers);
+            return response.data
         }else{
             return null;
         }
     }
-    async findStat({serverId, charId}){
+    async findStat({serverId, characterId}){
         const data = {"keyList":["character_stats","character_equipments","character_abyss","character_stigma"]};
-        const response = await this.api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${charId}`, data)
+        const response = await this.api.put(`https://api-aion.plaync.com/game/v2/classic/merge/server/${serverId}/id/${characterId}`, data)
         // const stats = await api.post(`/api/character/${server}/${userid}`);
         return response.data;
     }
     async findChar(server, name){
         try{
-            const {data} = await this.api.get(`https://api-aion.plaync.com/search/v1/characters?classId=&pageNo=1&pageSize=50&query=${encodeURIComponent(name)}&raceId=&serverId=${server}`);
-            if(data != null && data.documents.length > 0){
-                return data.documents;
+            // const {data} = await this.api.get(`https://api-aion.plaync.com/search/v1/characters?classId=&pageNo=1&pageSize=50&query=${encodeURIComponent(name)}&raceId=&serverId=${server}`);
+            const {data} = await this.api.get(`https://api-search.plaync.com/aion/search/v2/character?keyword=${encodeURIComponent(name)}&sort=_score%2Cdesc&serverId=${server}&serverType=classic`);
+            if(data != null && data.list.length > 0){
+                return data.list;
             }
         }catch (e) {
             if (!(e.message === 'ETIMEDOUT' || e.message.code === 'ETIMEDOUT')){
